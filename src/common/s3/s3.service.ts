@@ -1,18 +1,18 @@
-import { PutObjectCommand, S3Client, S3ClientConfig } from '@aws-sdk/client-s3';
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { FileUploadOptions } from './file-upload-options.interface';
+import { PutObjectCommand, S3Client, S3ClientConfig } from "@aws-sdk/client-s3";
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { FileUploadOptions } from "./file-upload-options.interface";
 
 @Injectable()
 export class S3Service {
   private readonly client: S3Client;
 
   constructor(configService: ConfigService) {
-    const accessKeyId = configService.get('AWS_ACCESS_KEY');
-    const secretAccessKey = configService.get('AWS_SECRET_ACCESS_KEY');
+    const accessKeyId = configService.get("AWS_ACCESS_KEY");
+    const secretAccessKey = configService.get("AWS_SECRET_ACCESS_KEY");
 
     const clientConfig: S3ClientConfig = {
-      region: 'us-east-1',
+      region: "us-west-1",
     };
 
     if (accessKeyId && secretAccessKey) {
@@ -31,7 +31,7 @@ export class S3Service {
         Bucket: bucket,
         Key: key,
         Body: file,
-      }),
+      })
     );
   }
 
