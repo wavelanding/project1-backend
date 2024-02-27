@@ -1,16 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateChatInput } from './dto/create-chat.input';
-import { UpdateChatInput } from './dto/update-chat.input';
-import { ChatsRepository } from './chats.repository';
-import { PipelineStage, Types } from 'mongoose';
-import { PaginationArgs } from '../common/dto/pagination-args.dto';
-import { UsersService } from '../users/users.service';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { CreateChatInput } from "./dto/create-chat.input";
+import { UpdateChatInput } from "./dto/update-chat.input";
+import { ChatsRepository } from "./chats.repository";
+import { PipelineStage, Types } from "mongoose";
+import { PaginationArgs } from "../common/dto/pagination-args.dto";
+import { UsersService } from "../users/users.service";
 
 @Injectable()
 export class ChatsService {
   constructor(
     private readonly chatsRepository: ChatsRepository,
-    private readonly usersService: UsersService,
+    private readonly usersService: UsersService
   ) {}
 
   async create(createChatInput: CreateChatInput, userId: string) {
@@ -23,16 +23,18 @@ export class ChatsService {
 
   async findMany(
     prePipelineStages: PipelineStage[] = [],
-    paginationArgs?: PaginationArgs,
+    paginationArgs?: PaginationArgs
   ) {
+    const skip = paginationArgs ? paginationArgs.skip : 0;
+    const limit = paginationArgs ? paginationArgs.limit : 1;
     const chats = await this.chatsRepository.model.aggregate([
       ...prePipelineStages,
       {
         $set: {
           latestMessage: {
             $cond: [
-              '$messages',
-              { $arrayElemAt: ['$messages', -1] },
+              "$messages",
+              { $arrayElemAt: ["$messages", -1] },
               {
                 createdAt: new Date(),
               },
@@ -40,16 +42,16 @@ export class ChatsService {
           },
         },
       },
-      { $sort: { 'latestMessage.createdAt': -1 } },
-      { $skip: paginationArgs.skip },
-      { $limit: paginationArgs.limit },
-      { $unset: 'messages' },
+      { $sort: { "latestMessage.createdAt": -1 } },
+      { $skip: skip },
+      { $limit: limit },
+      { $unset: "messages" },
       {
         $lookup: {
-          from: 'users',
-          localField: 'latestMessage.userId',
-          foreignField: '_id',
-          as: 'latestMessage.user',
+          from: "users",
+          localField: "latestMessage.userId",
+          foreignField: "_id",
+          as: "latestMessage.user",
         },
       },
     ]);
@@ -59,7 +61,7 @@ export class ChatsService {
         return;
       }
       chat.latestMessage.user = this.usersService.toEntity(
-        chat.latestMessage.user[0],
+        chat.latestMessage.user[0]
       );
       delete chat.latestMessage.userId;
       chat.latestMessage.chatId = chat._id;
