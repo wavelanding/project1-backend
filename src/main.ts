@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useGlobalPipes(new ValidationPipe());
   app.useLogger(app.get(Logger));
-  app.use(cookieParser());
+  app.use(cookieParser()); // use middleware
   // app.enableCors(); // for local
   // app.setGlobalPrefix('/api'); // for aws
   const configService = app.get(ConfigService);

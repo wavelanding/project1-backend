@@ -18,6 +18,20 @@ const isProduction = (conf: string) => {
   return conf === "production";
 };
 
+const getPinoOptions = (isProduction: boolean) => {
+  return {
+    transport: isProduction
+      ? undefined
+      : {
+          target: "pino-pretty",
+          options: {
+            singleLine: true,
+          },
+        },
+    level: isProduction ? "info" : "debug",
+  };
+};
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -63,19 +77,8 @@ const isProduction = (conf: string) => {
     LoggerModule.forRootAsync({
       useFactory: (configService: ConfigService) => {
         // const isProduction = configService.get("NODE_ENV") === "production";
-
         return {
-          pinoHttp: {
-            transport: isProduction(configService.get("NODE_ENV"))
-              ? undefined
-              : {
-                  target: "pino-pretty",
-                  options: {
-                    singleLine: true,
-                  },
-                },
-            level: isProduction ? "info" : "debug",
-          },
+          pinoHttp: getPinoOptions(isProduction(configService.get("NODE_ENV"))),
         };
       },
       inject: [ConfigService],
